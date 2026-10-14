@@ -1,5 +1,9 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## Project structure
+
+Use `src/app` for Expo Router routes, `src/components` for UI, `src/hooks` for React state, `src/services` for API calls, and `src/types` for shared types. Keep mobile simple: no hexagonal layers, ports, adapters, or dependency injection container. Hexagonal architecture belongs only to the backend.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
