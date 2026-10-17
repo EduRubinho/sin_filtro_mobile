@@ -5,7 +5,7 @@ import { Button } from './Button';
 
 interface LoginFormProps {
   busy: boolean;
-  onSubmit: (credentials: Credentials) => Promise<void>;
+  onSubmit: (credentials: Credentials) => Promise<unknown>;
 }
 
 export function LoginForm({ busy, onSubmit }: LoginFormProps) {
@@ -55,7 +55,7 @@ export function LoginForm({ busy, onSubmit }: LoginFormProps) {
         value={password}
         onChangeText={setPassword}
         editable={!busy}
-        maxLength={1024}
+        maxLength={64}
         returnKeyType="go"
         onSubmitEditing={submit}
         style={styles.input}

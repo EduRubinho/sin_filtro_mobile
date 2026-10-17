@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
@@ -44,7 +45,7 @@ export function MapScreen() {
         <View style={styles.account}>
           <Text style={styles.brand}>SIN FILTRO</Text>
           <Text accessibilityRole="header" style={styles.title}>Tu Mapa</Text>
-          <Text numberOfLines={1} style={styles.caption}>{session?.user.email}</Text>
+          <Text numberOfLines={1} style={styles.caption}>{session?.user.profile.displayName || session?.user.email}</Text>
         </View>
         <Pressable
           accessibilityRole="button"
@@ -77,6 +78,7 @@ export function MapScreen() {
         )}
       </MapView>
       <View style={styles.footer}>
+        <Button title="Mi perfil" variant="secondary" onPress={() => router.push('/profile')} />
         <Text style={styles.caption}>
           {position
             ? 'Ubicación obtenida. Pulsa el botón para actualizarla.'

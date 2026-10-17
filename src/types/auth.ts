@@ -1,6 +1,8 @@
 export interface User {
   id: string;
   email: string;
+  role: 'user' | 'admin';
+  profile: Profile;
 }
 
 export interface Credentials {
@@ -13,3 +15,14 @@ export interface Session {
   expiresAt: string;
   user: User;
 }
+
+export interface ProfileInput {
+  displayName: string;
+  bio: string;
+  interestIds: string[];
+}
+export interface Profile extends Omit<ProfileInput, 'displayName'> {
+  displayName: string | null;
+  completed: boolean;
+}
+export interface Category { id: string; name: string; slug: string }

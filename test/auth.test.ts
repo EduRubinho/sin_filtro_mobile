@@ -18,7 +18,7 @@ afterEach(() => {
   else Reflect.deleteProperty(globalThis, '__DEV__');
 });
 
-const session = { token: 'a'.repeat(43), expiresAt: new Date(Date.now() + 60000).toISOString(), user: { id: '1', email: 'edu@example.com' } };
+const session = { token: 'a'.repeat(43), expiresAt: new Date(Date.now() + 60000).toISOString(), user: { id: '1', email: 'edu@example.com', role: 'user', profile: { displayName: null, bio: '', interestIds: [], completed: false } } };
 
 test('valida antes de enviar y normaliza solo el correo', async () => {
   let body: unknown;
@@ -56,7 +56,7 @@ test('servicio envía JSON y bearer según contrato', async () => {
 });
 
 test('traduce 401, 429 y fallos de red, rechaza respuestas inválidas', async () => {
-  for (const [status, code] of [[400, 'INVALID_INPUT'], [401, 'UNAUTHORIZED'], [429, 'RATE_LIMITED'], [500, 'SERVER']] as const) {
+  for (const [status, code] of [[400, 'INVALID_INPUT'], [401, 'UNAUTHORIZED'], [403, 'FORBIDDEN'], [409, 'CONFLICT'], [429, 'RATE_LIMITED'], [500, 'SERVER']] as const) {
     mock.method(globalThis, 'fetch', async () => new Response(null, { status }));
     await assert.rejects(auth.getCurrentUser(session.token), { code });
   }
@@ -103,4 +103,39 @@ test('cancela una petición que supera los 10 segundos', async (context) => {
   const pending = auth.getCurrentUser(session.token);
   context.mock.timers.tick(10_000);
   await assert.rejects(pending, { code: 'NETWORK' });
+});
+
+test('registro y perfil usan sus endpoints; el rol viene exclusivamente de la respuesta', async () => {
+  const calls: { url: string; init?: RequestInit }[] = [];
+  const profile = { displayName: 'Valentina', bio: 'Deporte y música', interestIds: ['1', '2'] };
+  const updated = { ...session.user, profile: { ...profile, completed: true } };
+  mock.method(globalThis, 'fetch', async (url: unknown, init?: RequestInit) => {
+    calls.push({ url: String(url), init });
+    return Response.json(String(url).endsWith('/profile') ? { user: updated } : session);
+  });
+  await assert.rejects(auth.register({ email: 'edu@example.com', password: 'short' }), { code: 'INVALID_INPUT' });
+  assert.equal(calls.length, 0);
+  await auth.register({ email: ' EDU@EXAMPLE.COM ', password: 'password123' });
+  assert.equal(calls[0].url, 'https://api.example.com/auth/register');
+  assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { email: 'edu@example.com', password: 'password123' });
+  assert.deepEqual(await auth.updateProfile(session.token, profile), updated);
+  assert.equal(calls[1].init?.method, 'PATCH');
+  assert.equal((calls[1].init?.headers as Record<string, string>).Authorization, `Bearer ${session.token}`);
+  assert.deepEqual(JSON.parse(String(calls[1].init?.body)), profile);
+  for (const role of [undefined, 'superadmin']) {
+    mock.method(globalThis, 'fetch', async () => Response.json({ ...session, user: { ...session.user, role } }));
+    await assert.rejects(auth.login({ email: 'edu@example.com', password: 'password123' }), { code: 'SERVER' });
+  }
+});
+
+test('catálogo exige IDs válidos y errores de perfil conservan el mensaje del servidor', async () => {
+  const categories = [{ id: '1', name: 'Deporte', slug: 'deporte' }];
+  mock.method(globalThis, 'fetch', async () => Response.json({ categories }));
+  assert.deepEqual(await auth.getCategories(), categories);
+  mock.method(globalThis, 'fetch', async () => Response.json({ categories: [{ id: 1 }] }));
+  await assert.rejects(auth.getCategories(), { code: 'SERVER' });
+  mock.method(globalThis, 'fetch', async () => Response.json({ error: { message: 'Selecciona dos intereses.' } }, { status: 400 }));
+  await assert.rejects(auth.updateProfile(session.token, { displayName: 'Edu', bio: '', interestIds: [] }), {
+    code: 'INVALID_INPUT', message: 'Selecciona dos intereses.',
+  });
 });

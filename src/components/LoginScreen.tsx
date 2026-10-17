@@ -1,24 +1,30 @@
+import { useEffect } from 'react';
+import { router } from 'expo-router';
+import { Button } from './Button';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
 import { LoginForm } from './LoginForm';
 
 export function LoginScreen() {
-  const { busy, error, login } = useAuth();
+  const { busy, error, login, clearError } = useAuth();
+  useEffect(() => { clearError(); }, [clearError]);
 
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
-            <Text style={styles.brand}>SIN FILTRO</Text>
+            <Text style={styles.brand}>SinFiltro</Text>
             <Text accessibilityRole="header" style={styles.title}>
-              Qué bueno verte.
+              Tu próximo plan
+              empieza aquí.
             </Text>
             <Text style={styles.subtitle}>
-              Inicia sesión con tu cuenta para continuar.
+              Planes reales, personas reales. Inicia sesión para encontrarte con los demás.
             </Text>
             <LoginForm busy={busy} onSubmit={login} />
+            <Button title="Crear cuenta" variant="secondary" disabled={busy} onPress={() => { clearError(); router.push('/register'); }} />
             {busy && <ActivityIndicator accessibilityLabel="Procesando" color="#1E5547" style={styles.feedback} />}
             {error && (
               <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>
@@ -40,7 +46,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F6F5F1' },
   content: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   card: { width: '100%', maxWidth: 440, alignSelf: 'center' },
-  brand: { color: '#1E5547', letterSpacing: 3, fontSize: 13, fontWeight: '700', marginBottom: 32 },
+  brand: { color: '#1E5547', letterSpacing: -2, fontSize: 46, fontWeight: '700', marginBottom: 32 },
   title: { fontSize: 34, fontWeight: '700', color: '#192D27', marginBottom: 12 },
   subtitle: { fontSize: 16, lineHeight: 24, color: '#5A655F', marginBottom: 32 },
   feedback: { marginTop: 16 },

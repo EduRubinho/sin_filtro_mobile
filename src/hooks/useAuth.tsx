@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { AppState } from 'react-native';
 import * as auth from '../services/auth';
 import { ApiError } from '../services/api';
-import type { Credentials, Session } from '../types/auth';
+import type { Credentials, Session, ProfileInput } from '../types/auth';
 
 const AuthContext = createContext<ReturnType<typeof useAuthState> | null>(null);
 
@@ -33,7 +33,16 @@ function useAuthState() {
     if (!session) return;
     const timer = setTimeout(expire, Math.max(0, Date.parse(session.expiresAt) - Date.now()));
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && Date.parse(session.expiresAt) <= Date.now()) expire();
+      if (state !== 'active') return;
+      if (Date.parse(session.expiresAt) <= Date.now()) { expire(); return; }
+      // Refresca rol/perfil cuando la app vuelve al primer plano.
+      void auth.getCurrentUser(session.token).then(user => {
+        setSession(current => current?.token === session.token ? { ...current, user } : current);
+      }).catch(error => {
+        if (error instanceof ApiError && error.code === 'UNAUTHORIZED') {
+          setSession(current => current?.token === session.token ? null : current);
+        }
+      });
     });
     return () => {
       clearTimeout(timer);
@@ -42,27 +51,40 @@ function useAuthState() {
   }, [session, expire]);
 
   async function run(action: () => Promise<void>) {
-    if (locked.current) return;
+    if (locked.current) return false;
     locked.current = true;
     setBusy(true);
     setError(null);
     try {
       await action();
+      return true;
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === 'UNAUTHORIZED') setSession(null);
       setError(caught instanceof ApiError ? caught.message : 'No se pudo completar la operación.');
+      return false;
     } finally {
       locked.current = false;
       setBusy(false);
     }
   }
 
+  const clearError = useCallback(() => setError(null), []);
+
   return {
+    clearError,
     session,
     busy,
     error,
     login: (credentials: Credentials) => run(async () => {
       setSession(await auth.login(credentials));
+    }),
+    register: (credentials: Credentials) => run(async () => {
+      setSession(await auth.register(credentials));
+    }),
+    saveProfile: (profile: ProfileInput) => run(async () => {
+      if (!session) throw new ApiError('UNAUTHORIZED', 'Inicia sesión para guardar tu perfil.');
+      const user = await auth.updateProfile(session.token, profile);
+      setSession(current => current?.token === session.token ? { ...current, user } : current);
     }),
     checkSession: () => run(async () => {
       if (!session) return;

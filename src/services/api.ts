@@ -1,6 +1,8 @@
 type ApiErrorCode =
   | 'INVALID_INPUT'
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'CONFLICT'
   | 'RATE_LIMITED'
   | 'NETWORK'
   | 'SERVER'
@@ -18,6 +20,8 @@ export class ApiError extends Error {
 
 const HTTP_ERRORS: Record<number, [ApiErrorCode, string]> = {
   400: ['INVALID_INPUT', 'Revisa el correo y la contraseña.'],
+  403: ['FORBIDDEN', 'No tienes permiso para realizar esta acción.'],
+  409: ['CONFLICT', 'Ya existe una cuenta con ese correo.'],
   401: ['UNAUTHORIZED', 'Correo o contraseña incorrectos, o sesión vencida.'],
   429: ['RATE_LIMITED', 'Demasiados intentos. Inténtalo de nuevo en 15 minutos.'],
 };
@@ -42,7 +46,7 @@ function getBaseUrl(): string {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PATCH';
   token?: string;
   body?: unknown;
 }
@@ -65,7 +69,14 @@ export async function request(path: string, { method = 'GET', token, body }: Req
     });
 
     const httpError = HTTP_ERRORS[response.status];
-    if (httpError) throw new ApiError(...httpError);
+    if (httpError) {
+      let message = httpError[1];
+      if (response.status === 400) {
+        const data = await response.json().catch(() => null);
+        if (typeof data?.error?.message === 'string') message = data.error.message;
+      }
+      throw new ApiError(httpError[0], message);
+    }
     if (!response.ok) throw new ApiError('SERVER', 'El servidor no pudo completar la solicitud.');
     if (response.status === 204) return;
 

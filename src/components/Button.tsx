@@ -35,6 +35,6 @@ const styles = StyleSheet.create({
   },
   text: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   disabled: { opacity: 0.6 },
-  secondary: { backgroundColor: 'transparent', padding: 18, minHeight: 48 },
+  secondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#1E5547', padding: 16, minHeight: 54 },
   secondaryText: { color: '#1E5547' },
 });
