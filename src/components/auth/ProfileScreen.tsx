@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
-import { getCategories } from '../services/auth';
-import type { Category } from '../types/auth';
-import { Button } from './Button';
-import { FormScreen, formStyles } from './FormScreen';
+import { useAuth } from '../../hooks/useAuth';
+import { getCategories } from '../../services/auth';
+import type { Category } from '../../types/auth';
+import { Button } from '../ui/Button';
+import { FormScreen, formStyles } from '../ui/FormScreen';
+import { colors } from '../ui/theme';
 
 const symbols: Record<string, string> = { deporte: '◉', musica: '♫', cafe: '☕', arte: '✧' };
 
@@ -43,9 +44,9 @@ export function ProfileScreen({ onboarding = false }: { onboarding?: boolean }) 
   }
 
   return (
-    <FormScreen title={onboarding ? 'Hazlo a tu manera.' : 'Tu perfil.'}
+    <FormScreen progress={onboarding} title={onboarding ? 'Hazlo a tu manera' : 'Tu perfil'}
       subtitle={onboarding ? 'Cuéntanos un poco de ti para empezar a conocer gente con tus mismos intereses.' : 'Así te presentas. Puedes cambiar tu nombre, biografía e intereses.'}>
-      <View style={styles.avatar}><Text style={styles.initial}>{displayName.trim().slice(0, 1).toLocaleUpperCase() || 'S'}</Text></View>
+      {!onboarding && <View style={styles.avatar}><Text style={styles.initial}>{displayName.trim().slice(0, 1).toLocaleUpperCase() || 'S'}</Text></View>}
       <Text style={formStyles.label}>¿Cómo te llamas?</Text>
       <TextInput style={formStyles.input} accessibilityLabel="Nombre" value={displayName} onChangeText={setDisplayName}
         placeholder="Tu nombre" placeholderTextColor="#777B83" autoCapitalize="words" maxLength={80} editable={!busy} />
@@ -73,17 +74,18 @@ export function ProfileScreen({ onboarding = false }: { onboarding?: boolean }) 
         onPress={submit} disabled={busy || loading || !!loadError || !displayName.trim() || interestIds.length < 2} />
       {onboarding
         ? <Button title="Cerrar sesión" variant="secondary" disabled={busy} onPress={logout} />
-        : <Button title="Volver al mapa" variant="secondary" disabled={busy} onPress={() => router.replace('/map')} />}
+        : <><Button title="Volver al mapa" variant="secondary" disabled={busy} onPress={() => router.replace('/map')} />
+          <Button title="Cerrar sesión" variant="secondary" disabled={busy} onPress={logout} /></>}
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#E5EDE5', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  initial: { color: '#1E5547', fontWeight: '700', fontSize: 28 },
-  optional: { color: '#5A655F', fontWeight: '400' }, bio: { minHeight: 96 },
+  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.softCoral, alignItems: 'center', justifyContent: 'center', marginBottom: 22, borderWidth: 1, borderColor: '#F2D2C8' },
+  initial: { color: colors.coral, fontWeight: '800', fontSize: 30 },
+  optional: { color: colors.muted, fontWeight: '400' }, bio: { minHeight: 96 },
   interests: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8, marginBottom: 24 },
-  chip: { minHeight: 48, minWidth: '45%', flexGrow: 1, borderRadius: 24, borderWidth: 1, borderColor: '#C9D1CA', padding: 14, alignItems: 'center' },
-  selected: { backgroundColor: '#1E5547', borderColor: '#1E5547' },
-  chipText: { color: '#263C33', fontWeight: '600', fontSize: 15 }, selectedText: { color: '#FFFFFF' },
+  chip: { minHeight: 52, minWidth: '45%', flexGrow: 1, borderRadius: 26, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14, alignItems: 'center', justifyContent: 'center' },
+  selected: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipText: { color: colors.text, fontWeight: '700', fontSize: 15 }, selectedText: { color: '#FFFFFF' },
 });

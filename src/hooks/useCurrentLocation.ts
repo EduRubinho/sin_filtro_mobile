@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import type { LocationPoint } from '../types/location';
 
-/** Obtiene una ubicación a pedido. No suscribe seguimiento ni envía datos al backend. */
+/** Obtiene una ubicación a pedido. No suscribe seguimiento. El mapa puede usar el punto como centro de búsqueda, sin persistirlo. */
 export function useCurrentLocation() {
   const [position, setPosition] = useState<LocationPoint | null>(null);
   const [locating, setLocating] = useState(false);
@@ -16,7 +16,7 @@ export function useCurrentLocation() {
     return () => { mounted.current = false; };
   }, []);
 
-  async function locate() {
+  const locate = useCallback(async () => {
     if (locked.current) return;
     locked.current = true;
     setLocating(true);
@@ -62,7 +62,7 @@ export function useCurrentLocation() {
       locked.current = false;
       if (mounted.current) setLocating(false);
     }
-  }
+  }, []);
 
   return { position, locating, error, needsSettings, locate };
 }

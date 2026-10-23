@@ -3,6 +3,7 @@ type ApiErrorCode =
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
   | 'CONFLICT'
+  | 'NOT_FOUND'
   | 'RATE_LIMITED'
   | 'NETWORK'
   | 'SERVER'
@@ -19,9 +20,10 @@ export class ApiError extends Error {
 }
 
 const HTTP_ERRORS: Record<number, [ApiErrorCode, string]> = {
-  400: ['INVALID_INPUT', 'Revisa el correo y la contraseña.'],
+  400: ['INVALID_INPUT', 'Revisa los datos ingresados.'],
   403: ['FORBIDDEN', 'No tienes permiso para realizar esta acción.'],
-  409: ['CONFLICT', 'Ya existe una cuenta con ese correo.'],
+  409: ['CONFLICT', 'No se pudo completar la operación por un conflicto con los datos.'],
+  404: ['NOT_FOUND', 'El registro ya no está disponible.'],
   401: ['UNAUTHORIZED', 'Correo o contraseña incorrectos, o sesión vencida.'],
   429: ['RATE_LIMITED', 'Demasiados intentos. Inténtalo de nuevo en 15 minutos.'],
 };
@@ -46,7 +48,7 @@ function getBaseUrl(): string {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH';
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   token?: string;
   body?: unknown;
 }
@@ -71,7 +73,7 @@ export async function request(path: string, { method = 'GET', token, body }: Req
     const httpError = HTTP_ERRORS[response.status];
     if (httpError) {
       let message = httpError[1];
-      if (response.status === 400) {
+      if ([400, 404, 409].includes(response.status)) {
         const data = await response.json().catch(() => null);
         if (typeof data?.error?.message === 'string') message = data.error.message;
       }

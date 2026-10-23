@@ -30,8 +30,8 @@ test('valida antes de enviar y normaliza solo el correo', async () => {
   await assert.rejects(auth.login({ email: 'edu@example.com', password: '' }), { code: 'INVALID_INPUT' });
   await assert.rejects(auth.login({ email: 'edu@example.com', password: 'a'.repeat(1025) }), { code: 'INVALID_INPUT' });
   assert.equal(body, undefined);
-  await auth.login({ email: ' EDU@EXAMPLE.COM ', password: ' pass ' });
-  assert.deepEqual(body, { email: 'edu@example.com', password: ' pass ' });
+  await auth.login({ email: ' EDU@EXAMPLE.COM ', password: ' password123 ' });
+  assert.deepEqual(body, { email: 'edu@example.com', password: ' password123 ' });
 });
 
 test('servicio envía JSON y bearer según contrato', async () => {
@@ -44,9 +44,9 @@ test('servicio envía JSON y bearer según contrato', async () => {
   process.env.EXPO_PUBLIC_API_URL = 'http://localhost:3000';
   Object.defineProperty(globalThis, '__DEV__', { value: true, configurable: true });
   mock.method(globalThis, 'fetch', transport);
-  assert.deepEqual(await auth.login({ email: 'edu@example.com', password: 'pass' }), session);
+  assert.deepEqual(await auth.login({ email: 'edu@example.com', password: 'password123' }), session);
   assert.equal(calls[0].url, 'http://localhost:3000/auth/login');
-  assert.equal(calls[0].init?.body, JSON.stringify({ email: 'edu@example.com', password: 'pass' }));
+  assert.equal(calls[0].init?.body, JSON.stringify({ email: 'edu@example.com', password: 'password123' }));
   assert.deepEqual(await auth.getCurrentUser(session.token), session.user);
   assert.deepEqual(calls[1].init?.headers, { Authorization: `Bearer ${session.token}` });
   await auth.logout(session.token);
@@ -63,7 +63,7 @@ test('traduce 401, 429 y fallos de red, rechaza respuestas inválidas', async ()
   mock.method(globalThis, 'fetch', async () => { throw new TypeError('network'); });
   await assert.rejects(auth.getCurrentUser(session.token), { code: 'NETWORK' });
   mock.method(globalThis, 'fetch', async () => Response.json({ token: 'bad' }));
-  await assert.rejects(auth.login({ email: 'edu@example.com', password: 'pass' }), { code: 'SERVER' });
+  await assert.rejects(auth.login({ email: 'edu@example.com', password: 'password123' }), { code: 'SERVER' });
 });
 
 test('no envía credenciales si falta URL o si usa HTTP fuera de desarrollo', async () => {
@@ -71,7 +71,7 @@ test('no envía credenciales si falta URL o si usa HTTP fuera de desarrollo', as
     if (url === undefined) delete process.env.EXPO_PUBLIC_API_URL;
     else process.env.EXPO_PUBLIC_API_URL = url;
     const fetchMock = mock.method(globalThis, 'fetch', async () => { throw new Error('No debe llamar'); });
-    await assert.rejects(auth.login({ email: 'edu@example.com', password: 'pass' }), { code: 'CONFIGURATION' });
+    await assert.rejects(auth.login({ email: 'edu@example.com', password: 'password123' }), { code: 'CONFIGURATION' });
     assert.equal(fetchMock.mock.callCount(), 0);
   }
 });
@@ -84,7 +84,7 @@ test('rechaza sesiones vencidas, usuarios inválidos y JSON malformado', async (
     { ...session, user: { id: 1, email: 'edu@example.com' } },
   ]) {
     mock.method(globalThis, 'fetch', async () => Response.json(data));
-    await assert.rejects(auth.login({ email: 'edu@example.com', password: 'pass' }), { code: 'SERVER' });
+    await assert.rejects(auth.login({ email: 'edu@example.com', password: 'password123' }), { code: 'SERVER' });
   }
 
   mock.method(globalThis, 'fetch', async () => Response.json({ user: null }));

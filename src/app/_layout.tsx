@@ -1,12 +1,15 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootNavigator />
-    </AuthProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -28,8 +31,8 @@ function RootNavigator() {
           <Stack.Screen name="onboarding" />
         </Stack.Protected>
         <Stack.Protected guard={session?.user.role === 'user' && session.user.profile.completed}>
-          <Stack.Screen name="map" />
-          <Stack.Screen name="profile" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="publish" />
         </Stack.Protected>
       </Stack>
     </>

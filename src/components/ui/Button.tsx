@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { colors } from './theme';
 
 interface ButtonProps {
   title: string;
@@ -16,7 +17,7 @@ export function Button({ title, onPress, disabled = false, variant = 'primary' }
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[styles.button, secondary && styles.secondary, disabled && styles.disabled]}
+      style={({ pressed }) => [styles.button, secondary && styles.secondary, pressed && !disabled && styles.pressed, disabled && styles.disabled]}
     >
       <Text style={[styles.text, secondary && styles.secondaryText]}>{title}</Text>
     </Pressable>
@@ -25,16 +26,17 @@ export function Button({ title, onPress, disabled = false, variant = 'primary' }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#1E5547',
-    borderRadius: 12,
+    backgroundColor: colors.ink,
+    borderRadius: 16,
     minHeight: 54,
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 10,
   },
-  text: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  disabled: { opacity: 0.6 },
-  secondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#1E5547', padding: 16, minHeight: 54 },
-  secondaryText: { color: '#1E5547' },
+  text: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  pressed: { transform: [{ scale: 0.985 }], opacity: 0.9 },
+  disabled: { opacity: 0.48 },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.ink, padding: 16, minHeight: 54 },
+  secondaryText: { color: colors.ink },
 });

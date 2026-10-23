@@ -5,7 +5,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object';
 }
 
-function isUser(value: unknown): value is User {
+export function isUser(value: unknown): value is User {
   return isObject(value) && typeof value.id === 'string' && /^[1-9][0-9]*$/.test(value.id) &&
     typeof value.email === 'string' && (value.role === 'user' || value.role === 'admin') &&
     isObject(value.profile) && (value.profile.displayName === null || typeof value.profile.displayName === 'string') &&

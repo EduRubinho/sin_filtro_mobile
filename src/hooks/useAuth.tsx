@@ -72,6 +72,7 @@ function useAuthState() {
 
   return {
     clearError,
+    expireSession: expire,
     session,
     busy,
     error,

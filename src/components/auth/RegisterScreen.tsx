@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Keyboard, Text, TextInput } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
-import { Button } from './Button';
-import { FormScreen, formStyles as styles } from './FormScreen';
+import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../ui/Button';
+import { FormScreen, formStyles as styles } from '../ui/FormScreen';
 
 export function RegisterScreen() {
   const { register, busy, error, clearError } = useAuth();
@@ -25,7 +25,7 @@ export function RegisterScreen() {
   }
 
   return (
-    <FormScreen title="Empieza tu historia." subtitle="Crea tu cuenta y encuentra tu próximo plan.">
+    <FormScreen title="Crea tu cuenta" subtitle="Registra tus datos de forma segura para empezar." progress>
       <Text style={styles.label}>Correo electrónico</Text>
       <TextInput style={styles.input} accessibilityLabel="Correo electrónico" value={email} onChangeText={setEmail}
         placeholder="tu@correo.com" placeholderTextColor="#777B83" keyboardType="email-address"
@@ -39,7 +39,7 @@ export function RegisterScreen() {
         placeholder="Repite tu contraseña" placeholderTextColor="#777B83" secureTextEntry autoCapitalize="none"
         autoCorrect={false} autoComplete="new-password" maxLength={64} editable={!busy} returnKeyType="go" onSubmitEditing={submit} />
       {(validation || error) && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{validation || error}</Text>}
-      <Button title={busy ? 'Creando cuenta…' : 'Crear cuenta'} onPress={submit} disabled={busy} />
+      <Button title={busy ? 'Creando cuenta…' : 'Continuar'} onPress={submit} disabled={busy} />
       <Button title="Ya tengo una cuenta" variant="secondary" disabled={busy} onPress={() => { clearError(); router.back(); }} />
     </FormScreen>
   );

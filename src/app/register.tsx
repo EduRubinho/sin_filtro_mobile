@@ -1,1 +1,1 @@
-export { RegisterScreen as default } from '../components/RegisterScreen';
+export { RegisterScreen as default } from '../components/auth/RegisterScreen';

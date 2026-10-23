@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Keyboard, StyleSheet, Text, TextInput } from 'react-native';
-import type { Credentials } from '../types/auth';
-import { Button } from './Button';
+import type { Credentials } from '../../types/auth';
+import { Button } from '../ui/Button';
+import { colors } from '../ui/theme';
 
 interface LoginFormProps {
   busy: boolean;
@@ -66,17 +67,17 @@ export function LoginForm({ busy, onSubmit }: LoginFormProps) {
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 14, fontWeight: '600', color: '#263C33', marginBottom: 8 },
+  label: { fontSize: 14, fontWeight: '700', color: colors.text, marginBottom: 8 },
   input: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#C9D1CA',
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    minHeight: 54,
+    borderRadius: 15,
+    minHeight: 58,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#192D27',
-    marginBottom: 20,
+    color: colors.text,
+    marginBottom: 18,
   },
 });
