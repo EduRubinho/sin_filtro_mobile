@@ -90,7 +90,7 @@ export function AdminScreen() {
       ListFooterComponent={!loading && !loadFailed ? <View style={[s.row, { justifyContent: 'space-between', marginVertical: 12 }]}>
         <Choice label="Anterior" disabled={blocked || page === 0} onPress={() => { setPage(value => value - 1); reload(); }} />
         <Choice label="Siguiente" disabled={blocked || items.length < 20} onPress={() => { setPage(value => value + 1); reload(); }} />
-      </View> : null} />
+      </View> : undefined} />
     {(panel?.kind === 'createUser' || panel?.kind === 'editUser') && <UserForm token={token} user={panel.kind === 'editUser' ? panel.user : undefined} onClose={() => setPanel(null)} onSaved={saved} />}
     {(panel?.kind === 'createEvent' || panel?.kind === 'editEvent') && <EventForm token={token} event={panel.kind === 'editEvent' ? panel.event : undefined} onClose={() => setPanel(null)} onSaved={saved} />}
     {panel?.kind === 'detail' && <Sheet title={isUser(panel.item) ? 'Detalle de usuario' : 'Detalle de evento'} busy={busy} onClose={() => { clearError(); setPanel(null); }}>

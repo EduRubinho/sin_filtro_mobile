@@ -35,6 +35,7 @@ function RootNavigator() {
           <Stack.Screen name="publish" />
           <Stack.Screen name="activity/[id]" />
           <Stack.Screen name="activity/[id]/edit" />
+          <Stack.Screen name="activity/[id]/chat" />
         </Stack.Protected>
       </Stack>
     </>

@@ -47,6 +47,13 @@ function getBaseUrl(): string {
   }
 }
 
+export function getWebSocketUrl(): string {
+  const url = new URL(getBaseUrl());
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/ws`;
+  return url.toString();
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   token?: string;

@@ -69,12 +69,12 @@ Flujo protegido según el rol devuelto por el backend:
 - `/`: mismo login para usuarios y administradores, sin selector de rol.
 - `/register`: correo, contraseña de 8 a 64 caracteres y confirmación. Crea exclusivamente usuarios normales.
 - `/onboarding`: nombre, biografía opcional y al menos dos intereses; guarda el perfil antes de entrar al mapa.
-- `/map`, `/publish`, `/activity/:id` y `/profile`: usuarios con perfil completo. Al entrar al mapa se solicita una lectura GPS y se centra la vista; si no está disponible, se usa Tacna como respaldo. El usuario publica una actividad, consulta su detalle y participantes, se une o se retira. Si es organizador puede editarla o cancelarla. «Mi ubicación» vuelve a solicitar la lectura, sin seguimiento continuo.
+- `/map`, `/plans`, `/publish`, `/activity/:id`, `/activity/:id/chat` y `/profile`: usuarios con perfil completo. Al entrar al mapa se solicita una lectura GPS y se centra la vista; si no está disponible, se usa Tacna como respaldo. El usuario publica una actividad, consulta su detalle y participantes, se une o se retira. «Mis planes» separa organizadas y participadas, muestra no leídos y abre el chat temporal. Si es organizador puede editarla o cancelarla. «Mi ubicación» vuelve a solicitar la lectura, sin seguimiento continuo.
 - `/admin`: panel de administración con secciones Usuarios y Eventos; listados paginados, detalle, creación, edición, eliminación con confirmación y cierre de sesión. Asignar el rol desde el [backend](../backend/README.md#cuentas-y-roles).
 
 No hay mascotas ni requisitos universitarios. El avatar muestra la inicial del nombre; la subida de fotos queda pendiente. El token se pierde al terminar el proceso de la app; el perfil permanece guardado en PostgreSQL. Una cuenta existente sin perfil completo pasa por onboarding al iniciar sesión.
 
-Pendientes: recuperación de contraseña, chat, PIN compartido del evento y álbumes. Los recuerdos cercanos tendrán un listado separado del mapa. Ver [modelo de datos y reglas](../backend/docs/database/README.md).
+Pendientes: recuperación de contraseña, PIN compartido del evento y álbumes. Los recuerdos cercanos tendrán un listado separado del mapa. Ver [modelo de datos y reglas](../backend/docs/database/README.md).
 
 ## Variables y Git
 

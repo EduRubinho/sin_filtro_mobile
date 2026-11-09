@@ -1,2 +1,1 @@
-import { ComingSoonScreen } from '../../components/activities/ComingSoonScreen';
-export default function PlansRoute() { return <ComingSoonScreen section="plans" />; }
+export { PlansScreen as default } from '../../components/activities/PlansScreen';

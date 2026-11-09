@@ -76,6 +76,7 @@ export function ActivityDetailScreen({ activityId }: { activityId: string }) {
         </View>
 
         {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+        {open && (activity.viewer.isOrganizer || activity.viewer.isJoined) && <Button title="Abrir chat de la actividad" variant="secondary" onPress={() => router.push(`/activity/${activity.id}/chat`)} />}
         {activity.viewer.isOrganizer ? <View style={styles.actions}>
           <View style={styles.ownerNotice}><Text style={styles.ownerText}>Esta actividad fue publicada por ti.</Text></View>
           {open && <Button title="Editar actividad" disabled={busy} onPress={() => router.push(`/activity/${activity.id}/edit`)} />}

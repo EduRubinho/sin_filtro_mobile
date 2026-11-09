@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, mock, test } from 'node:test';
-import { cancelActivity, getActivity, getActivityParticipants, getMapActivities, joinActivity, leaveActivity, publishActivity, updateActivity } from '../src/services/activities.ts';
+import { cancelActivity, getActivity, getActivityParticipants, getMapActivities, getMyPlans, joinActivity, leaveActivity, publishActivity, updateActivity } from '../src/services/activities.ts';
 const original = process.env.EXPO_PUBLIC_API_URL;
 beforeEach(() => { process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com'; });
 afterEach(() => { mock.restoreAll(); if (original === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = original; });
@@ -67,4 +67,16 @@ test('detalle y participación usan rutas del usuario y validan sus respuestas',
   ]);
   mock.method(globalThis, 'fetch', async () => Response.json({ activity: { ...detail, participantCount: 2 } }));
   await assert.rejects(getActivity('token', '1'), { code: 'SERVER' });
+});
+test('mis planes separa actividades organizadas y participadas', async () => {
+  const organized = { id: '8', title: 'Café', locationName: 'Centro', categoryName: 'Café', startsAt: '2027-02-01T12:00:00Z',
+    endsAt: '2027-02-01T14:00:00Z', status: 'published', capacity: 6, participantCount: 2, relation: 'organizer',
+    chatAvailable: true, chatReadOnly: false, unreadCount: 3 };
+  const participating = { ...organized, id: '9', title: 'Arte', status: 'completed', relation: 'participant', chatReadOnly: true };
+  let url = '';
+  mock.method(globalThis, 'fetch', async (value: unknown) => { url = String(value); return Response.json({ organized: [organized], participating: [participating] }); });
+  assert.deepEqual(await getMyPlans('token'), { organized: [organized], participating: [participating] });
+  assert.equal(url, 'https://api.example.com/activities/mine');
+  mock.method(globalThis, 'fetch', async () => Response.json({ organized: [{ ...organized, relation: 'participant' }], participating: [] }));
+  await assert.rejects(getMyPlans('token'), { code: 'SERVER' });
 });

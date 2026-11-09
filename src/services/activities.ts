@@ -1,5 +1,5 @@
 import { request, ApiError } from './api.ts';
-import type { ActivityParticipant, MapActivity, MapActivities } from '../types/activity.ts';
+import type { ActivityParticipant, MapActivity, MapActivities, UserPlan, UserPlans } from '../types/activity.ts';
 import type { ActivityDetail, EventStatus, PublishActivityInput } from '../types/event.ts';
 
 
@@ -14,6 +14,21 @@ function isActivity(value: unknown): value is MapActivity {
     typeof v.distanceMeters === 'number' && Number.isFinite(v.distanceMeters) && v.distanceMeters >= 0 &&
     typeof v.startsAt === 'string' && Number.isFinite(Date.parse(v.startsAt)) &&
     typeof v.endsAt === 'string' && Number.isFinite(Date.parse(v.endsAt)) && Date.parse(v.endsAt) > Date.parse(v.startsAt);
+}
+
+function isUserPlan(value: unknown): value is UserPlan {
+  if (!value || typeof value !== 'object') return false;
+  const plan = value as Record<string, unknown>;
+  return typeof plan.id === 'string' && /^[1-9][0-9]*$/.test(plan.id) &&
+    ['title', 'locationName', 'categoryName'].every(key => typeof plan[key] === 'string') &&
+    typeof plan.startsAt === 'string' && Number.isFinite(Date.parse(plan.startsAt)) &&
+    typeof plan.endsAt === 'string' && Number.isFinite(Date.parse(plan.endsAt)) && Date.parse(plan.endsAt) > Date.parse(plan.startsAt) &&
+    typeof plan.status === 'string' && ['published', 'cancelled', 'completed'].includes(plan.status) &&
+    (plan.capacity === null || typeof plan.capacity === 'number' && Number.isInteger(plan.capacity) && plan.capacity > 0) &&
+    typeof plan.participantCount === 'number' && Number.isInteger(plan.participantCount) && plan.participantCount >= 0 &&
+    typeof plan.relation === 'string' && ['organizer', 'participant'].includes(plan.relation) &&
+    typeof plan.chatAvailable === 'boolean' && typeof plan.chatReadOnly === 'boolean' &&
+    typeof plan.unreadCount === 'number' && Number.isInteger(plan.unreadCount) && plan.unreadCount >= 0;
 }
 
 function isParticipant(value: unknown): value is ActivityParticipant {
@@ -72,6 +87,19 @@ export async function getMapActivities(token: string, latitude: number, longitud
     throw new ApiError('SERVER', 'El servidor devolvió actividades inválidas.');
   }
   return { activities: result.activities, hasMore: result.hasMore };
+}
+
+export async function getMyPlans(token: string): Promise<UserPlans> {
+  const data = await request('/activities/mine', { token });
+  if (!data || typeof data !== 'object') throw new ApiError('SERVER', 'No se pudieron leer tus planes.');
+  const plans = data as Record<string, unknown>;
+  if (!Array.isArray(plans.organized) || !Array.isArray(plans.participating) ||
+    plans.organized.length > 100 || plans.participating.length > 100 ||
+    !plans.organized.every(isUserPlan) || !plans.participating.every(isUserPlan) ||
+    plans.organized.some(plan => plan.relation !== 'organizer') || plans.participating.some(plan => plan.relation !== 'participant')) {
+    throw new ApiError('SERVER', 'El servidor devolvió planes inválidos.');
+  }
+  return { organized: plans.organized, participating: plans.participating };
 }
 
 export async function publishActivity(token: string, input: PublishActivityInput): Promise<string> {
