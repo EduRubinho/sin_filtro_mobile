@@ -4,3 +4,9 @@ export interface MapActivity {
   price: number; currency: string; distanceMeters: number;
 }
 export interface MapActivities { activities: MapActivity[]; hasMore: boolean }
+
+export interface ActivityParticipant {
+  id: string;
+  displayName: string;
+  joinedAt: string;
+}

@@ -33,6 +33,8 @@ function RootNavigator() {
         <Stack.Protected guard={session?.user.role === 'user' && session.user.profile.completed}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="publish" />
+          <Stack.Screen name="activity/[id]" />
+          <Stack.Screen name="activity/[id]/edit" />
         </Stack.Protected>
       </Stack>
     </>

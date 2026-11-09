@@ -26,4 +26,13 @@ export interface EventRecord extends EventInput {
   updatedAt: string;
 }
 
+export interface ActivityDetail extends EventRecord {
+  categoryName: string;
+  organizer: { id: string; displayName: string };
+  participants: import('./activity').ActivityParticipant[];
+  participantCount: number;
+  availableSpots: number | null;
+  viewer: { isOrganizer: boolean; isJoined: boolean };
+}
+
 export type PublishActivityInput = Omit<EventInput, 'organizerId' | 'status'>;

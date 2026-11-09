@@ -93,16 +93,16 @@ export function MapScreen() {
         <Pressable accessibilityRole="button" accessibilityLabel="Actualizar actividades" disabled={loading} onPress={refresh} style={[styles.refreshButton, loading && styles.disabled]}><Text style={styles.refreshText}>↻</Text></Pressable>
       </View>
 
-      {selected && <View style={styles.activityCard}>
+      {selected && <Pressable accessibilityRole="button" accessibilityLabel={`Ver detalle de ${selected.title}`} onPress={() => router.push(`/activity/${selected.id}`)} style={styles.activityCard}>
         <Image source={activityImage} style={styles.activityImage} resizeMode="cover" />
         <View style={styles.activityInfo}>
-          <View style={styles.cardTop}><Text style={styles.category}>{selected.categoryName}</Text><Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setSelectedId(null)} hitSlop={10}><Text style={styles.closeText}>×</Text></Pressable></View>
+          <View style={styles.cardTop}><Text style={styles.category}>{selected.categoryName}</Text><Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={event => { event.stopPropagation(); setSelectedId(null); }} hitSlop={10}><Text style={styles.closeText}>×</Text></Pressable></View>
           <Text style={styles.activityTitle} numberOfLines={1}>{selected.title}</Text>
           <Text style={styles.meta} numberOfLines={1}>◷  {new Date(selected.startsAt).toLocaleString('es-PE', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</Text>
           <Text style={styles.meta} numberOfLines={1}>⌖  {selected.locationName}</Text>
-          <Text style={styles.price}>{selected.price === 0 ? 'Gratis' : `${selected.currency} ${selected.price.toFixed(2)}`}</Text>
+          <View style={styles.detailLink}><Text style={styles.price}>{selected.price === 0 ? 'Gratis' : `${selected.currency} ${selected.price.toFixed(2)}`}</Text><Text style={styles.detailText}>Ver detalle →</Text></View>
         </View>
-      </View>}
+      </Pressable>}
 
       {!selected && <Pressable accessibilityRole="button" disabled={locating} onPress={locate} style={[styles.locationButton, locating && styles.disabled]}><Text style={styles.locationText}>{locating ? 'Localizando…' : '⌖  Mi ubicación'}</Text></Pressable>}
       <Pressable accessibilityRole="button" onPress={() => router.push('/publish')} style={({ pressed }) => [styles.createButton, pressed && styles.pressed]}><Text style={styles.createButtonText}>＋  Crear actividad</Text></Pressable>
@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
   activityInfo: { flex: 1, paddingVertical: 2 }, cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   category: { color: colors.coral, fontWeight: '800', fontSize: 12 }, closeText: { color: colors.muted, fontSize: 26, lineHeight: 26 },
   activityTitle: { color: colors.text, fontWeight: '900', fontSize: 18, marginBottom: 4 }, meta: { color: colors.muted, fontSize: 12, lineHeight: 18 }, price: { color: colors.ink, fontWeight: '800', fontSize: 12, marginTop: 2 },
+  detailLink: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, detailText: { color: colors.coral, fontSize: 12, fontWeight: '900', marginTop: 2 },
   locationButton: { position: 'absolute', left: 14, bottom: 16, height: 48, borderRadius: 24, paddingHorizontal: 16, justifyContent: 'center', backgroundColor: '#FFFFFFF2', ...shadow },
   locationText: { color: colors.ink, fontWeight: '800', fontSize: 13 },
   createButton: { position: 'absolute', right: 14, bottom: 16, height: 54, borderRadius: 27, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: colors.ink, ...shadow },

@@ -76,7 +76,7 @@ export function EventForm({ token, event, onClose, onSaved }: { token: string; e
     <Field label="Precio · 0 para gratis" value={draft.price} onChangeText={value => change('price', value)} keyboardType="decimal-pad" editable={!busy} />
     <Field label="Moneda" value={draft.currency} onChangeText={value => change('currency', value)} maxLength={3} autoCapitalize="characters" editable={!busy} />
     <Field label="Cupo · vacío para sin límite" value={draft.capacity} onChangeText={value => change('capacity', value)} keyboardType="number-pad" editable={!busy} />
-    <Notice text="El cupo incluye al organizador y no puede ser menor que la cantidad de inscritos." />
+    <Notice text="El cupo corresponde a participantes; el organizador no ocupa una plaza." />
     <Text style={s.label}>Estado</Text><View style={s.row}>{statuses.map(status => <Choice key={status} label={labels[status]} selected={draft.status === status} disabled={busy} onPress={() => change('status', status)} />)}</View>
     {(draft.status === 'cancelled' || draft.status === 'completed') && !closed && <Notice text="Al guardar este estado, el evento quedará cerrado y no podrá reabrirse." />}
     {error && <Notice error text={error} />}
