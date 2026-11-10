@@ -15,22 +15,29 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { session } = useAuth();
+  // Redirige al destino permitido sin montar la ruta vacía `/` entre pantallas.
+  const sessionDestination = !session
+    ? '/login'
+    : session.user.role === 'admin'
+      ? '/admin'
+      : session.user.profile.completed ? '/map' : '/onboarding';
 
   return (
     <>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={!session}>
-          <Stack.Screen name="index" />
+        <Stack.Screen name="index" />
+        <Stack.Protected guard={!session} redirectTo={sessionDestination}>
+          <Stack.Screen name="login" />
           <Stack.Screen name="register" />
         </Stack.Protected>
-        <Stack.Protected guard={session?.user.role === 'admin'}>
+        <Stack.Protected guard={session?.user.role === 'admin'} redirectTo={sessionDestination}>
           <Stack.Screen name="admin" />
         </Stack.Protected>
-        <Stack.Protected guard={session?.user.role === 'user' && !session.user.profile.completed}>
+        <Stack.Protected guard={session?.user.role === 'user' && !session.user.profile.completed} redirectTo={sessionDestination}>
           <Stack.Screen name="onboarding" />
         </Stack.Protected>
-        <Stack.Protected guard={session?.user.role === 'user' && session.user.profile.completed}>
+        <Stack.Protected guard={session?.user.role === 'user' && session.user.profile.completed} redirectTo={sessionDestination}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="publish" />
           <Stack.Screen name="activity/[id]" />

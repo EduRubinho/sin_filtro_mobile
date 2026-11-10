@@ -1,6 +1,6 @@
 # SinFiltro · Mobile
 
-React Native + Expo SDK 57, TypeScript y Expo Router. Implementa login con roles, registro, perfil, mapa y flujo básico de actividades. Sesión de 30 minutos en memoria. Usa Apple Maps en iOS y Google Maps en Android; consulta actividades usando las coordenadas del centro del mapa, sin guardarlas como ubicación del usuario.
+React Native + Expo SDK 58, TypeScript y Expo Router. Implementa login con roles, registro, perfil, mapa y flujo básico de actividades. Sesión de 30 minutos en memoria. Usa Apple Maps en iOS y Google Maps en Android; consulta actividades usando las coordenadas del centro del mapa, sin guardarlas como ubicación del usuario.
 
 ## Ejecutar
 
@@ -12,6 +12,8 @@ Desde la raíz del proyecto:
 cd mobile
 npm ci
 ```
+
+El repositorio fija `legacy-peer-deps=true` en `.npmrc` porque npm 11 intenta resolver una dependencia opcional de Windows de `@react-native-community/datetimepicker`; no cambia el comportamiento en iOS ni Android.
 
 Si no existe `.env`, copiar `cp .env.example .env`. Configurar `EXPO_PUBLIC_API_URL` según el dispositivo:
 
@@ -44,6 +46,10 @@ Desde `mobile`:
 
 Los scripts iOS/Android usan `expo start --go`; no compilan una app propia. Web no está validado.
 
+### Actualización a SDK 58
+
+Usar Expo Go compatible con SDK 58. La ruta `/` queda fuera de `Stack.Protected` y decide el destino según la sesión; el login está en `/login` para evitar el bucle de navegación detectado al proteger la ruta raíz. Las dependencias nativas se alinearon con SDK 58 y los directorios ignorados `ios/` y `android/` se regeneraron con Expo Prebuild. Los builds propios anteriores deben recompilarse.
+
 ## Estructura y alcance
 
 Mobile mantiene una estructura sencilla de Expo Router; no utiliza arquitectura hexagonal:
@@ -66,7 +72,8 @@ El flujo permitido es `app → components → hooks/services → api → backend
 
 Flujo protegido según el rol devuelto por el backend:
 
-- `/`: mismo login para usuarios y administradores, sin selector de rol.
+- `/`: distribuye a la ruta correcta según la sesión, rol y estado del perfil.
+- `/login`: mismo login para usuarios y administradores, sin selector de rol.
 - `/register`: correo, contraseña de 8 a 64 caracteres y confirmación. Crea exclusivamente usuarios normales.
 - `/onboarding`: nombre, biografía opcional y al menos dos intereses; guarda el perfil antes de entrar al mapa.
 - `/map`, `/plans`, `/publish`, `/activity/:id`, `/activity/:id/chat` y `/profile`: usuarios con perfil completo. Al entrar al mapa se solicita una lectura GPS y se centra la vista; si no está disponible, se usa Tacna como respaldo. El usuario publica una actividad, consulta su detalle y participantes, se une o se retira. «Mis planes» separa organizadas y participadas, muestra no leídos y abre el chat temporal. Si es organizador puede editarla o cancelarla. «Mi ubicación» vuelve a solicitar la lectura, sin seguimiento continuo.

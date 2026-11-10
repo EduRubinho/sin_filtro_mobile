@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Keyboard, StyleSheet, Text, TextInput } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 import type { Credentials } from '../../types/auth';
 import { Button } from '../ui/Button';
 import { colors } from '../ui/theme';
@@ -12,7 +13,7 @@ interface LoginFormProps {
 export function LoginForm({ busy, onSubmit }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const passwordInput = useRef<TextInput>(null);
+  const passwordInput = useRef<TextInputInstance>(null);
 
   async function submit() {
     if (busy) return;

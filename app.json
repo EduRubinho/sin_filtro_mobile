@@ -6,14 +6,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-build-properties",
-        {
-          "ios": {
-            "enableSceneSupport": true
-          }
-        }
-      ],
-      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Permite que Sin Filtro use tu ubicación para mostrar tu posición en el mapa.",
@@ -41,7 +33,12 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.edusito.prueba2Vacia"
     },
     "web": {
       "favicon": "./assets/favicon.png"
