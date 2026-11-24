@@ -34,8 +34,9 @@ export function MapScreen() {
   const map = useRef<MapView>(null);
   const [mapReady, setMapReady] = useState(false);
   const [center, setCenter] = useState({ latitude: INITIAL_REGION.latitude, longitude: INITIAL_REGION.longitude });
+  const [phase, setPhase] = useState<'active' | 'finished'>('active');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { activities, loading, error: activitiesError, hasMore, refresh } = useMapActivities(center.latitude, center.longitude);
+  const { activities, loading, error: activitiesError, hasMore, refresh } = useMapActivities(center.latitude, center.longitude, phase);
   const selected = activities.find(activity => activity.id === selectedId);
 
   useEffect(() => { void locate(); }, [locate]);
@@ -60,9 +61,9 @@ export function MapScreen() {
       </View>
       <Text numberOfLines={1} style={styles.greeting}>Hola, {session?.user.profile.displayName || session?.user.email}</Text>
       <View style={styles.filters}>
-        <View style={[styles.filter, styles.filterActive]}><Text style={styles.filterActiveText}>Hoy</Text></View>
+        {(['active', 'finished'] as const).map(value => <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: phase === value }} onPress={() => { setSelectedId(null); setPhase(value); }} style={[styles.filter, phase === value && styles.filterActive]}><Text style={phase === value ? styles.filterActiveText : styles.filterText}>{value === 'active' ? 'Activas' : 'Finalizadas'}</Text></Pressable>)}
         <View style={styles.filter}><Text style={styles.filterText}>5 km</Text></View>
-        <View style={styles.filter}><Text style={styles.filterText}>{activities.length}{hasMore ? '+' : ''} actividades</Text></View>
+
       </View>
     </View>
 
@@ -76,10 +77,10 @@ export function MapScreen() {
           setCenter(current => distanceInMeters(current, next) < MINIMUM_SEARCH_MOVEMENT_METERS ? current : next);
         }} moveOnMarkerPress={false} showsMyLocationButton={false} showsCompass toolbarEnabled={false}>
         <Circle center={center} radius={5000} strokeColor="#123A312A" fillColor="#123A3108" strokeWidth={1} />
-        {activities.map(activity => <Marker key={activity.id} identifier={`activity-${activity.id}`}
+        {activities.map(activity => <Marker key={`${activity.id}-${activity.phase}`} identifier={`activity-${activity.id}`}
           coordinate={{ latitude: activity.latitude, longitude: activity.longitude }} title={activity.title} description={activity.locationName}
           tracksViewChanges={false} anchor={{ x: 0.5, y: 0.5 }} onPress={() => setSelectedId(activity.id)}>
-          <View style={[styles.activityMarker, selectedId === activity.id && styles.selectedMarker]}><Text style={styles.activityMarkerText}>{categorySymbol(activity.categoryName)}</Text></View>
+          <View style={[styles.activityMarker, selectedId === activity.id && styles.selectedMarker, activity.phase === 'finished' && styles.finishedMarker]}><Text style={[styles.activityMarkerText, activity.phase === 'finished' && styles.finishedMarkerText]}>{categorySymbol(activity.categoryName)}</Text></View>
         </Marker>)}
         {position && <Marker coordinate={position} title="Tu ubicación" description={position.accuracy === null ? undefined : `Precisión aproximada: ${Math.round(position.accuracy)} m`}>
           <View style={styles.userMarker}><View style={styles.userMarkerCore} /></View>
@@ -88,19 +89,19 @@ export function MapScreen() {
 
       <View style={styles.mapTools}>
         <View pointerEvents="none" style={styles.mapStatus}>
-          {loading ? <ActivityIndicator size="small" color={colors.ink} /> : <Text style={styles.mapStatusText}>{activities.length ? 'Actividades cercanas' : 'Explora moviendo el mapa'}</Text>}
+          {loading ? <ActivityIndicator size="small" color={colors.ink} /> : <Text style={styles.mapStatusText}>{activities.length ? `${activities.length}${hasMore ? '+' : ''} actividades cercanas` : 'Explora moviendo el mapa'}</Text>}
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Actualizar actividades" disabled={loading} onPress={refresh} style={[styles.refreshButton, loading && styles.disabled]}><Text style={styles.refreshText}>↻</Text></Pressable>
       </View>
 
-      {selected && <Pressable accessibilityRole="button" accessibilityLabel={`Ver detalle de ${selected.title}`} onPress={() => router.push(`/activity/${selected.id}`)} style={styles.activityCard}>
+      {selected && <Pressable accessibilityRole="button" accessibilityLabel={`Ver detalle de ${selected.title}`} onPress={() => router.push(selected.phase === 'finished' ? `/album/${selected.id}` : `/activity/${selected.id}`)} style={styles.activityCard}>
         <Image source={activityImage} style={styles.activityImage} resizeMode="cover" />
         <View style={styles.activityInfo}>
-          <View style={styles.cardTop}><Text style={styles.category}>{selected.categoryName}</Text><Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={event => { event.stopPropagation(); setSelectedId(null); }} hitSlop={10}><Text style={styles.closeText}>×</Text></Pressable></View>
+          <View style={styles.cardTop}><Text style={styles.category}>{selected.phase === 'finished' ? 'Finalizada' : selected.phase === 'ongoing' ? 'En curso' : 'Próxima'} · {selected.categoryName}</Text><Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={event => { event.stopPropagation(); setSelectedId(null); }} hitSlop={10}><Text style={styles.closeText}>×</Text></Pressable></View>
           <Text style={styles.activityTitle} numberOfLines={1}>{selected.title}</Text>
           <Text style={styles.meta} numberOfLines={1}>◷  {new Date(selected.startsAt).toLocaleString('es-PE', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</Text>
           <Text style={styles.meta} numberOfLines={1}>⌖  {selected.locationName}</Text>
-          <View style={styles.detailLink}><Text style={styles.price}>{selected.price === 0 ? 'Gratis' : `${selected.currency} ${selected.price.toFixed(2)}`}</Text><Text style={styles.detailText}>Ver detalle →</Text></View>
+          <View style={styles.detailLink}><Text style={styles.price}>{selected.price === 0 ? 'Gratis' : `${selected.currency} ${selected.price.toFixed(2)}`}</Text><Text style={styles.detailText}>{selected.phase === 'finished' ? 'Ver álbum →' : 'Ver detalle →'}</Text></View>
         </View>
       </Pressable>}
 
@@ -128,6 +129,8 @@ const styles = StyleSheet.create({
   mapArea: { flex: 1, overflow: 'hidden' }, map: { flex: 1 },
   topError: { backgroundColor: '#FFF2EF', paddingHorizontal: 20, paddingVertical: 9 }, errorText: { color: colors.danger, fontSize: 13, lineHeight: 18, textAlign: 'center' },
   activityMarker: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral, borderWidth: 4, borderColor: '#FFFFFF', ...shadow },
+  finishedMarker: { backgroundColor: '#FFFFFF', borderColor: '#111111' },
+  finishedMarkerText: { color: '#111111' },
   selectedMarker: { transform: [{ scale: 1.12 }], backgroundColor: colors.ink },
   activityMarkerText: { color: '#FFFFFF', fontSize: 25, fontWeight: '900' },
   userMarker: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#2F80ED44', alignItems: 'center', justifyContent: 'center' },

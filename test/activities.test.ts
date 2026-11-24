@@ -4,9 +4,9 @@ import { cancelActivity, getActivity, getActivityParticipants, getMapActivities,
 const original = process.env.EXPO_PUBLIC_API_URL;
 beforeEach(() => { process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com'; });
 afterEach(() => { mock.restoreAll(); if (original === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = original; });
-const activity = { id: '1', title: 'Vóley', description: '', locationName: 'Parque', categoryName: 'Deporte', latitude: -12.04, longitude: -77.03,
+const activity = { phase: 'upcoming', id: '1', title: 'Vóley', description: '', locationName: 'Parque', categoryName: 'Deporte', latitude: -12.04, longitude: -77.03,
   startsAt: '2027-01-01T12:00:00Z', endsAt: '2027-01-01T14:00:00Z', timeZone: 'America/Lima', price: 0, currency: 'PEN', distanceMeters: 12 };
-const detail = { ...activity, organizerId: '2', categoryId: '1', address: null, meetingDetails: null, capacity: 10, status: 'published',
+const detail = { ...activity, albumVisibility: 'private', album: { enabled: false, canView: false, canUpload: false }, organizerId: '2', categoryId: '1', address: null, meetingDetails: null, capacity: 10, status: 'published',
   completedAt: null, createdAt: '2026-12-01T12:00:00Z', updatedAt: '2026-12-01T12:00:00Z',
   organizer: { id: '2', displayName: 'Andrea' }, participants: [{ id: '3', displayName: 'Lucía', joinedAt: '2026-12-15T12:00:00Z' }],
   participantCount: 1, availableSpots: 9, viewer: { isOrganizer: false, isJoined: true } };
@@ -14,7 +14,7 @@ test('el mapa consulta su endpoint con centro, radio y sesión, sin usar el CRUD
   let path = '', headers: unknown;
   mock.method(globalThis, 'fetch', async (url: unknown, init?: RequestInit) => { path = String(url); headers = init?.headers; return Response.json({ activities: [activity], hasMore: false }); });
   assert.deepEqual(await getMapActivities('token', -12.04, -77.03), { activities: [activity], hasMore: false });
-  assert.equal(path, 'https://api.example.com/activities/map?lat=-12.04&lng=-77.03&radiusMeters=5000');
+  assert.equal(path, 'https://api.example.com/activities/map?lat=-12.04&lng=-77.03&radiusMeters=5000&phase=active');
   assert.deepEqual(headers, { Authorization: 'Bearer token' });
   await assert.rejects(getMapActivities('token', 91, 0), { code: 'INVALID_INPUT' });
   await assert.rejects(getMapActivities('token', 0, 0, -1), { code: 'INVALID_INPUT' });
@@ -36,7 +36,7 @@ test('usuario publica una actividad sin enviar organizador ni estado', async () 
     authorization = (init?.headers as Record<string, string>).Authorization;
     return Response.json({ event: { id: '9' } }, { status: 201 });
   });
-  const input = { categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
+  const input = { albumVisibility: 'private' as const, categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
     latitude: -18.0066, longitude: -70.2463, startsAt: '2027-01-01T12:00:00Z', endsAt: '2027-01-01T14:00:00Z',
     timeZone: 'America/Lima', price: 0, currency: 'PEN', capacity: null };
   assert.equal(await publishActivity('token', input), '9');
@@ -58,7 +58,7 @@ test('detalle y participación usan rutas del usuario y validan sus respuestas',
   assert.deepEqual(await joinActivity('token', '1'), detail);
   assert.deepEqual(await leaveActivity('token', '1'), detail);
   assert.deepEqual(await cancelActivity('token', '1'), detail);
-  const input = { categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
+  const input = { albumVisibility: 'private' as const, categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
     latitude: -12.04, longitude: -77.03, startsAt: detail.startsAt, endsAt: detail.endsAt, timeZone: 'America/Lima', price: 0, currency: 'PEN', capacity: 10 };
   assert.deepEqual(await updateActivity('token', '1', input), detail);
   assert.deepEqual(calls.map(call => [call.url.replace('https://api.example.com', ''), call.method]), [

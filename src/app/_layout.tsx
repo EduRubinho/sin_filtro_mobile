@@ -40,9 +40,11 @@ function RootNavigator() {
         <Stack.Protected guard={session?.user.role === 'user' && session.user.profile.completed} redirectTo={sessionDestination}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="publish" />
+          <Stack.Screen name="album/[id]" />
           <Stack.Screen name="activity/[id]" />
           <Stack.Screen name="activity/[id]/edit" />
           <Stack.Screen name="activity/[id]/chat" />
+          <Stack.Screen name="activity/[id]/participants" />
         </Stack.Protected>
       </Stack>
     </>

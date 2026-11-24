@@ -8,12 +8,12 @@ import type { MapActivities } from '../types/activity';
 
 const empty: MapActivities = { activities: [], hasMore: false };
 /** Conserva los marcadores visibles mientras renueva los resultados del centro solicitado. */
-export function useMapActivities(latitude: number, longitude: number) {
+export function useMapActivities(latitude: number, longitude: number, phase: 'active' | 'finished' = 'active') {
   const { session, expireSession } = useAuth();
   const token = session?.token ?? '';
   const [revision, setRevision] = useState(0);
   const [focused, setFocused] = useState(false);
-  const [state, setState] = useState<{ data: MapActivities; error: string | null; loading: boolean }>({ data: empty, error: null, loading: true });
+  const [state, setState] = useState<{ data: MapActivities; dataToken: string; error: string | null; loading: boolean }>({ data: empty, dataToken: token, error: null, loading: true });
   const refresh = useCallback(() => setRevision(value => value + 1), []);
   useFocusEffect(useCallback(() => {
     setFocused(true); refresh();
@@ -24,8 +24,8 @@ export function useMapActivities(latitude: number, longitude: number) {
     let active = true;
     const timer = setTimeout(() => {
       if (active) setState(current => ({ ...current, loading: true, error: null }));
-      void getMapActivities(token, latitude, longitude).then(data => {
-        if (active) setState({ data, error: null, loading: false });
+      void getMapActivities(token, latitude, longitude, 5000, phase).then(data => {
+        if (active) setState({ data, dataToken: token, error: null, loading: false });
       }).catch(error => {
         if (!active) return;
         if (error instanceof ApiError && error.code === 'UNAUTHORIZED') expireSession();
@@ -33,12 +33,13 @@ export function useMapActivities(latitude: number, longitude: number) {
       });
     }, 450);
     return () => { active = false; clearTimeout(timer); };
-  }, [focused, token, latitude, longitude, revision, expireSession]);
+  }, [focused, token, latitude, longitude, phase, revision, expireSession]);
   useEffect(() => {
     if (!focused) return;
     const subscription = AppState.addEventListener('change', value => { if (value === 'active') refresh(); });
     const timer = setInterval(() => { if (AppState.currentState === 'active') refresh(); }, 60_000);
     return () => { subscription.remove(); clearInterval(timer); };
   }, [focused, refresh]);
-  return { ...state.data, loading: state.loading, error: state.error, refresh };
+  const data = state.dataToken === token ? state.data : empty;
+  return { ...data, activities: data.activities.filter(activity => phase === 'finished' ? activity.phase === 'finished' : activity.phase !== 'finished'), loading: state.loading, error: state.error, refresh };
 }

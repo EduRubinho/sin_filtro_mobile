@@ -52,6 +52,8 @@ Usar Expo Go compatible con SDK 58. La ruta `/` queda fuera de `Stack.Protected`
 
 ## Estructura y alcance
 
+En el detalle de una actividad, la sección **Asistencia** permite al organizador generar/regenerar o revocar el PIN y consultar confirmados/pendientes. Los inscritos ingresan seis dígitos para validar. Abre 15 minutos antes y cierra al finalizar o cancelar; el backend controla horarios e intentos. El PIN del organizador solo se muestra al generarlo y se borra de la pantalla al salir o enviar la app al fondo. La información se refresca cada 15 segundos mientras el detalle está visible. No cambia el acceso al chat.
+
 Mobile mantiene una estructura sencilla de Expo Router; no utiliza arquitectura hexagonal:
 
 ```text
@@ -81,7 +83,7 @@ Flujo protegido según el rol devuelto por el backend:
 
 No hay mascotas ni requisitos universitarios. El avatar muestra la inicial del nombre; la subida de fotos queda pendiente. El token se pierde al terminar el proceso de la app; el perfil permanece guardado en PostgreSQL. Una cuenta existente sin perfil completo pasa por onboarding al iniciar sesión.
 
-Pendientes: recuperación de contraseña, PIN compartido del evento y álbumes. Los recuerdos cercanos tendrán un listado separado del mapa. Ver [modelo de datos y reglas](../backend/docs/database/README.md).
+Pendiente: recuperación de contraseña. Recuerdos y subida de fotos están implementados. Las actividades finalizadas accesibles se consultan desde el filtro del mapa. Ver [modelo de datos y reglas](../backend/docs/database/README.md).
 
 ## Variables y Git
 
@@ -101,6 +103,20 @@ La participación de usuarios utiliza rutas independientes del CRUD administrati
 
 El mapa consulta `GET /activities/map` con la sesión y un radio de 5 km alrededor del centro. El círculo representa ese radio. Una nueva búsqueda se activa cuando el centro se desplaza al menos 750 m, con una espera de 450 ms tras terminar el movimiento. Los marcadores anteriores permanecen visibles durante la actualización. También se actualiza al volver a la pantalla/app, cada minuto en primer plano y con «Actualizar».
 
-Solo se muestran actividades `published`, no eliminadas, cuya hora de fin no haya pasado. Tocando el marcador circular coral se abre una tarjeta y al pulsarla se entra al detalle completo. Allí se muestran organizador, descripción, horario, lugar, cupo y participantes. El usuario puede unirse o retirarse; el organizador obtiene controles para editar o cancelar. El marcador azul indica la ubicación obtenida del dispositivo.
+El filtro **Activas** muestra próximas y en curso con círculo coral. **Finalizadas** muestra eventos terminados accesibles según privacidad/asistencia; el círculo es blanco con borde e ícono negros y la foto ilustrativa conserva sus colores. Tocando el marcador circular coral se abre una tarjeta y al pulsarla se entra al detalle completo. Allí se muestran organizador, descripción, horario, lugar, cupo y participantes. El usuario puede unirse o retirarse; el organizador obtiene controles para editar o cancelar. El marcador azul indica la ubicación obtenida del dispositivo.
 
-Para probar: publica una actividad desde la cuenta de usuario o crea un evento **Publicado** desde el panel administrativo, eligiendo un punto cercano en el mapa. Al volver al mapa principal se actualiza la búsqueda. Los borradores no aparecen. Se muestran hasta 100 actividades por búsqueda; si hay más, el mapa lo indica. No se requiere cambiar el esquema de la base.
+Para probar: publica una actividad desde la cuenta de usuario o crea un evento **Publicado** desde el panel administrativo, eligiendo un punto cercano en el mapa. Al volver al mapa principal se actualiza la búsqueda. Los borradores no aparecen. Se muestran hasta 100 actividades por búsqueda; si hay más, el mapa lo indica. Esta versión requiere aplicar `backend/docs/database/album-privacy.sql` a la base existente.
+
+La publicación (usuario o administrador) permite elegir **Álbum público/privado**. La elección queda bloqueada después de publicar y se muestra en el detalle antes de inscribirse. Unirse durante la actividad no confirma asistencia. El organizador también puede ingresar su PIN para confirmar su presencia, sin ocupar cupo. El detalle muestra si el álbum está habilitado y si requiere asistencia; el álbum permite ver fotos, subirlas y gestionar las propias.
+
+## Recuerdos
+
+“Mis recuerdos” lista actividades finalizadas con asistencia validada; “Cercanos” busca desde GPS o un punto del mapa, con radios de 500 m, 1 km y 5 km. Cada álbum muestra fotos paginadas y su privacidad fija. El detalle de actividad abre el mismo álbum.
+
+Un asistente validado puede seleccionar hasta 5 fotos, revisar la vista previa, escribir descripciones y subirlas. También puede usar la cámara. Se comprimen a JPEG de hasta 1600 px; hay progreso y reintento por foto sin duplicar las subidas completadas. El autor puede editar la descripción o eliminar su foto. Sin asistencia, un álbum público solo se puede leer.
+
+Usa `expo-image-picker` y `expo-image-manipulator`, compatibles con Expo Go SDK 58. Reiniciar Metro tras instalar dependencias. Probar cámara en dispositivo físico; el simulador iOS no tiene cámara. Los builds propios requieren recompilar para incorporar módulos/permisos. La API debe estar accesible por la red desde el teléfono y el backend debe conservar su carpeta privada de fotos.
+
+Las imágenes de álbumes se descargan con `fetch` y Bearer antes de mostrarse. `AlbumImage` mantiene la imagen en memoria, cancela al desmontarse y ofrece carga/error/reintento; el visor nativo no realiza solicitudes autenticadas remotas. Esto evita los errores 401 observados en Android.
+
+El detalle resume cuatro participantes y permite abrir `activity/[id]/participants`: lista virtualizada con búsqueda por nombre, filtros de asistencia y actualización al deslizar. Los estados individuales se consultan solo para organizador e inscritos; el organizador se muestra separado y no ocupa cupo. La privacidad del álbum aparece bajo el título y no se puede modificar.

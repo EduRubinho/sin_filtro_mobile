@@ -1,2 +1,2 @@
-import { ComingSoonScreen } from '../../components/activities/ComingSoonScreen';
-export default function MemoriesRoute() { return <ComingSoonScreen section="memories" />; }
+import { MemoriesScreen } from '../../components/memories/MemoriesScreen';
+export default function MemoriesRoute() { return <MemoriesScreen />; }

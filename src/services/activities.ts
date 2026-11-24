@@ -6,7 +6,7 @@ import type { ActivityDetail, EventStatus, PublishActivityInput } from '../types
 function isActivity(value: unknown): value is MapActivity {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return typeof v.id === 'string' && /^[1-9][0-9]*$/.test(v.id) &&
+  return ['upcoming', 'ongoing', 'finished'].includes(v.phase as string) && typeof v.id === 'string' && /^[1-9][0-9]*$/.test(v.id) &&
     ['title', 'description', 'locationName', 'categoryName', 'timeZone', 'currency'].every(key => typeof v[key] === 'string') &&
     typeof v.latitude === 'number' && Number.isFinite(v.latitude) && Math.abs(v.latitude) <= 90 &&
     typeof v.longitude === 'number' && Number.isFinite(v.longitude) && Math.abs(v.longitude) <= 180 &&
@@ -45,7 +45,9 @@ function isActivityDetail(value: unknown): value is ActivityDetail {
   const organizer = activity.organizer as Record<string, unknown> | undefined;
   const viewer = activity.viewer as Record<string, unknown> | undefined;
   const statuses: EventStatus[] = ['draft', 'published', 'cancelled', 'completed'];
-  return typeof activity.id === 'string' && /^[1-9][0-9]*$/.test(activity.id) &&
+  const album = activity.album as Record<string, unknown> | undefined;
+  return !!album && ['enabled', 'canView', 'canUpload'].every(key => typeof album[key] === 'boolean') &&
+    ['private', 'public'].includes(activity.albumVisibility as string) && typeof activity.id === 'string' && /^[1-9][0-9]*$/.test(activity.id) &&
     typeof activity.organizerId === 'string' && typeof activity.categoryId === 'string' &&
     ['title', 'description', 'locationName', 'timeZone', 'currency', 'categoryName'].every(key => typeof activity[key] === 'string') &&
     (activity.address === null || typeof activity.address === 'string') &&
@@ -75,11 +77,11 @@ function activityResponse(data: unknown): ActivityDetail {
 }
 
 
-export async function getMapActivities(token: string, latitude: number, longitude: number, radiusMeters = 5000): Promise<MapActivities> {
+export async function getMapActivities(token: string, latitude: number, longitude: number, radiusMeters = 5000, phase: 'active' | 'finished' = 'active'): Promise<MapActivities> {
   if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180 || !Number.isFinite(radiusMeters) || radiusMeters <= 0 || radiusMeters > 10000) {
     throw new ApiError('INVALID_INPUT', 'Ubicación de búsqueda inválida.');
   }
-  const query = new URLSearchParams({ lat: String(latitude), lng: String(longitude), radiusMeters: String(radiusMeters) });
+  const query = new URLSearchParams({ lat: String(latitude), lng: String(longitude), radiusMeters: String(radiusMeters), phase });
   const data = await request(`/activities/map?${query}`, { token });
   if (!data || typeof data !== 'object') throw new ApiError('SERVER', 'No se pudieron leer las actividades.');
   const result = data as Record<string, unknown>;

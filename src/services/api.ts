@@ -28,7 +28,7 @@ const HTTP_ERRORS: Record<number, [ApiErrorCode, string]> = {
   429: ['RATE_LIMITED', 'Demasiados intentos. Inténtalo de nuevo en 15 minutos.'],
 };
 
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   try {
     const url = new URL(process.env.EXPO_PUBLIC_API_URL ?? '');
     const allowHttp = typeof __DEV__ !== 'undefined' && __DEV__;
@@ -80,7 +80,7 @@ export async function request(path: string, { method = 'GET', token, body }: Req
     const httpError = HTTP_ERRORS[response.status];
     if (httpError) {
       let message = httpError[1];
-      if ([400, 404, 409].includes(response.status)) {
+      if ([400, 404, 409, 429].includes(response.status)) {
         const data = await response.json().catch(() => null);
         if (typeof data?.error?.message === 'string') message = data.error.message;
       }

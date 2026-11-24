@@ -8,7 +8,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Permite que Sin Filtro use tu ubicación para mostrar tu posición en el mapa.",
+          "locationWhenInUsePermission": "Permite que Sin Filtro use tu ubicaci\u00f3n para mostrar tu posici\u00f3n en el mapa.",
           "locationAlwaysPermission": false,
           "locationAlwaysAndWhenInUsePermission": false,
           "motionUsagePermission": false,
@@ -17,7 +17,15 @@
           "isAndroidForegroundServiceEnabled": false
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite seleccionar fotos para compartirlas en los \u00e1lbumes de tus actividades.",
+          "cameraPermission": "Permite tomar fotos para los \u00e1lbumes de tus actividades.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "version": "1.0.0",
     "orientation": "portrait",

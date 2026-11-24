@@ -1,6 +1,7 @@
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'completed';
 
 export interface EventInput {
+  albumVisibility: 'public' | 'private';
   organizerId: string;
   categoryId: string;
   title: string;
@@ -27,6 +28,7 @@ export interface EventRecord extends EventInput {
 }
 
 export interface ActivityDetail extends EventRecord {
+  album: { enabled: boolean; canView: boolean; canUpload: boolean };
   categoryName: string;
   organizer: { id: string; displayName: string };
   participants: import('./activity').ActivityParticipant[];

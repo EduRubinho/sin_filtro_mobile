@@ -81,6 +81,9 @@ export function PublishActivityScreen({ activityId }: { activityId?: string } = 
 
   const frozen = !!activityId && Number.isFinite(Date.parse(draft.startsAt)) && Date.parse(draft.startsAt) <= openedAt;
   return <FormScreen title={activityId ? 'Editar actividad' : 'Publicar actividad'} subtitle={activityId ? 'Actualiza la información que verán los participantes.' : 'Completa la información y elige el punto de encuentro en el mapa.'}>
+    <Text style={s.label}>Privacidad del álbum</Text>
+    <View style={s.row}>{(['private', 'public'] as const).map(value => <Choice key={value} label={value === 'private' ? 'Privado' : 'Público'} selected={draft.albumVisibility === value} disabled={busy || !!activityId} onPress={() => change('albumVisibility', value)} />)}</View>
+    <Notice text="Queda fija al publicar. Público: cualquiera puede ver las fotos. Privado: solo asistentes validados. En ambos casos, subir fotos requiere asistencia validada y que la actividad termine." />
     <Field label="Título" value={draft.title} onChangeText={value => change('title', value)} maxLength={140} editable={!busy} />
     <Field label="Descripción" value={draft.description} onChangeText={value => change('description', value)} maxLength={4000} multiline editable={!busy} />
     <Text style={s.label}>Categoría</Text>

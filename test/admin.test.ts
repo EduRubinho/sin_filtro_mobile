@@ -7,7 +7,7 @@ const originalUrl = process.env.EXPO_PUBLIC_API_URL;
 beforeEach(() => { process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com'; });
 afterEach(() => { mock.restoreAll(); if (originalUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = originalUrl; });
 const user = { id: '2', email: 'user@example.com', role: 'user', status: 'active', createdAt: '2026-01-01T00:00:00Z', profile: { displayName: null, bio: '', interestIds: [], completed: false } };
-const event: EventRecord = { id: '1', organizerId: '2', categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
+const event: EventRecord = { albumVisibility: 'private', id: '1', organizerId: '2', categoryId: '1', title: 'Vóley', description: '', locationName: 'Parque', address: null, meetingDetails: null,
   latitude: -12, longitude: -77, startsAt: '2027-01-01T17:00:00-05:00', endsAt: '2027-01-01T19:00:00-05:00', timeZone: 'America/Lima', price: 0, currency: 'PEN', capacity: null, status: 'draft', completedAt: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' };
 test('CRUD de usuarios envía token, paginación y cuerpos correctos, DELETE acepta 204', async () => {
   const calls: { path: string; init?: RequestInit }[] = [];

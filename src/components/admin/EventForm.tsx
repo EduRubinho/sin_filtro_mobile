@@ -49,6 +49,9 @@ export function EventForm({ token, event, onClose, onSaved }: { token: string; e
       {draft.organizerId && <Notice text={`Seleccionado: ${organizerName} · #${draft.organizerId}`} />}
       <OrganizerPicker token={token} selected={draft.organizerId} disabled={busy} onSelect={user => { change('organizerId', user.id); setOrganizerName(user.profile.displayName || user.email); }} />
     </>}
+    <Text style={s.label}>Privacidad del álbum</Text>
+    <View style={s.row}>{(['private', 'public'] as const).map(value => <Choice key={value} label={value === 'private' ? 'Privado' : 'Público'} selected={draft.albumVisibility === value} disabled={busy || (!!event && event.status !== 'draft')} onPress={() => change('albumVisibility', value)} />)}</View>
+    <Notice text="Queda fija al publicar. Público: cualquiera puede ver las fotos. Privado: solo asistentes validados. En ambos casos, subir fotos requiere asistencia validada y que la actividad termine." />
     <Field label="Título" value={draft.title} onChangeText={value => change('title', value)} maxLength={140} editable={!busy} />
     <Field label="Descripción" value={draft.description} onChangeText={value => change('description', value)} maxLength={4000} multiline editable={!busy} />
     <Text style={s.label}>Categoría</Text>

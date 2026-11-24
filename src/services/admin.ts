@@ -17,6 +17,7 @@ function isEvent(v: unknown): v is EventRecord {
     typeof v.longitude === 'number' && Number.isFinite(v.longitude) && Math.abs(v.longitude) <= 180 &&
     typeof v.price === 'number' && Number.isFinite(v.price) && v.price >= 0 &&
     (v.capacity === null || (typeof v.capacity === 'number' && Number.isInteger(v.capacity) && v.capacity > 0)) &&
+    ['private', 'public'].includes(v.albumVisibility as string) &&
     ['draft', 'published', 'cancelled', 'completed'].includes(v.status as string) &&
     [v.startsAt, v.endsAt, v.createdAt, v.updatedAt].every(date) && (v.completedAt === null || date(v.completedAt));
 }

@@ -1,11 +1,12 @@
 import type { EventInput, EventRecord, EventStatus } from '../types/event';
 export interface EventDraft {
+  albumVisibility: 'public' | 'private';
   organizerId: string; categoryId: string; title: string; description: string; locationName: string;
   address: string; meetingDetails: string; latitude: string; longitude: string; startsAt: string; endsAt: string;
   timeZone: string; price: string; currency: string; capacity: string; status: EventStatus;
 }
 export function eventDraft(event?: EventRecord): EventDraft {
-  return { organizerId: event?.organizerId ?? '', categoryId: event?.categoryId ?? '', title: event?.title ?? '',
+  return { albumVisibility: event?.albumVisibility ?? 'private', organizerId: event?.organizerId ?? '', categoryId: event?.categoryId ?? '', title: event?.title ?? '',
     description: event?.description ?? '', locationName: event?.locationName ?? '', address: event?.address ?? '', meetingDetails: event?.meetingDetails ?? '',
     latitude: event ? String(event.latitude) : '', longitude: event ? String(event.longitude) : '', startsAt: event?.startsAt ?? '', endsAt: event?.endsAt ?? '',
     timeZone: event?.timeZone ?? 'America/Lima', price: String(event?.price ?? 0), currency: event?.currency ?? 'PEN',
