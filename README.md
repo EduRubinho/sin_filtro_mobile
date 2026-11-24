@@ -120,3 +120,5 @@ Usa `expo-image-picker` y `expo-image-manipulator`, compatibles con Expo Go SDK 
 Las imágenes de álbumes se descargan con `fetch` y Bearer antes de mostrarse. `AlbumImage` mantiene la imagen en memoria, cancela al desmontarse y ofrece carga/error/reintento; el visor nativo no realiza solicitudes autenticadas remotas. Esto evita los errores 401 observados en Android.
 
 El detalle resume cuatro participantes y permite abrir `activity/[id]/participants`: lista virtualizada con búsqueda por nombre, filtros de asistencia y actualización al deslizar. Los estados individuales se consultan solo para organizador e inscritos; el organizador se muestra separado y no ocupa cupo. La privacidad del álbum aparece bajo el título y no se puede modificar.
+
+`UserIdentity` centraliza avatar/nombre y navegación a `/users/:id` en detalle, participantes y chat. El perfil se consulta al abrirlo mediante `GET /profiles/:id`; muestra nombre, biografía e intereses. No consulta la API por cada avatar.

@@ -1,3 +1,4 @@
+import { UserIdentity } from '../users/UserIdentity';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -64,16 +65,13 @@ export function ActivityParticipantsScreen({ activityId }: { activityId: string 
         {attendance && <Text style={s.summary}>{attendance.enrolled} inscritos · {attendance.confirmed} confirmados · {attendance.pending} pendientes</Text>}
         <TextInput accessibilityLabel="Buscar participante" placeholder="Buscar participante" placeholderTextColor={colors.muted} value={query} onChangeText={setQuery} style={s.search} autoCorrect={false} />
         {attendance && <View style={s.filters}>{filters.map(([value, label]) => <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: filter === value }} onPress={() => setFilter(value)} style={[s.chip, filter === value && s.chipActive]}><Text style={[s.chipText, filter === value && s.chipTextActive]}>{label}</Text></Pressable>)}</View>}
-        {activity && <View style={s.person}><View style={s.avatar}><Text style={s.initial}>{activity.organizer.displayName.slice(0, 1).toUpperCase()}</Text></View><View style={s.copy}><Text style={s.name}>{activity.organizer.displayName}</Text><Text style={s.organizer}>Organizador · No ocupa cupo</Text></View></View>}
+        {activity && <UserIdentity userId={activity.organizer.id} name={activity.organizer.displayName} style={s.person} subtitle={<Text style={s.organizer}>Organizador · No ocupa cupo</Text>} />}
         {!loading && !attendance && !error && <Text style={s.note}>Los estados de asistencia están disponibles para el organizador y los inscritos.</Text>}
         {!!error && <View style={s.feedback}><Text accessibilityRole="alert" style={s.error}>{error}</Text><Button title="Reintentar" onPress={() => setAttempt(v => v + 1)} /></View>}
       </>}
-      renderItem={({ item }) => <View style={s.person}>
-        <View style={s.avatar}><Text style={s.initial}>{item.displayName.slice(0, 1).toUpperCase()}</Text></View>
-        <View style={s.copy}><Text style={s.name}>{item.displayName}</Text>
-          {attendance && <Text style={[s.badge, item.validatedAt ? s.confirmed : s.pending]}>{item.validatedAt ? 'Asistencia confirmada' : 'Pendiente'}</Text>}
-        </View>
-      </View>}
+      renderItem={({ item }) => <UserIdentity userId={item.id} name={item.displayName} style={s.person}
+        subtitle={attendance && <Text style={[s.badge, item.validatedAt ? s.confirmed : s.pending]}>{item.validatedAt ? 'Asistencia confirmada' : 'Pendiente'}</Text>} />}
+
       ListEmptyComponent={loading ? <ActivityIndicator color={colors.ink} style={s.feedback} /> : !error ? <Text style={s.empty}>{people.length ? 'No hay participantes con estos filtros.' : 'Todavía no hay participantes.'}</Text> : undefined}
     />
   </SafeAreaView>;

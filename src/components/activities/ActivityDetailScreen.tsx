@@ -1,3 +1,4 @@
+import { UserIdentity } from '../users/UserIdentity';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -95,7 +96,7 @@ export function ActivityDetailScreen({ activityId }: { activityId: string }) {
           </View>
         </View>
         <View style={styles.fact}><Text style={styles.factIcon}>⌖</Text><View style={{ flex: 1 }}><Text style={styles.factText}>{activity.locationName}</Text>{activity.address && <Text style={styles.secondary}>{activity.address}</Text>}{activity.meetingDetails && <Text style={styles.secondary}>Encuentro: {activity.meetingDetails}</Text>}</View></View>
-        <View style={styles.fact}><Text style={styles.factIcon}>○</Text><Text style={styles.factText}>Organiza {activity.organizer.displayName}</Text></View>
+        <UserIdentity userId={activity.organizer.id} name={activity.organizer.displayName} subtitle={<Text style={styles.secondary}>Organizador</Text>} style={styles.fact} />
 
 
         <View style={styles.summaryRow}>
@@ -105,15 +106,14 @@ export function ActivityDetailScreen({ activityId }: { activityId: string }) {
 
       
         <View style={styles.section}><Text style={styles.sectionTitle}>Acerca de la actividad</Text><Text style={styles.description}>{activity.description || 'El organizador todavía no agregó una descripción.'}</Text></View>
-        <Pressable accessibilityRole="button" accessibilityLabel={`Ver los ${activity.participantCount} participantes`}
-          onPress={() => router.push(`/activity/${activity.id}/participants`)} style={styles.participantsCard}>
-          <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>Participantes · {activity.participantCount}</Text><Text style={styles.seeAll}>Ver todos ›</Text></View>
+        <View style={styles.participantsCard}>
+          <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>Participantes · {activity.participantCount}</Text><Pressable accessibilityRole="button" accessibilityLabel="Ver todos los participantes" onPress={() => router.push(`/activity/${activity.id}/participants`)} style={{ marginLeft: 'auto', minHeight: 44, justifyContent: 'center' }}><Text style={styles.seeAll}>Ver todos ›</Text></Pressable></View>
           <View style={styles.avatarRow}>
-            {activity.participants.slice(0, 4).map(person => <View key={person.id} style={styles.personAvatar}><Text style={styles.personInitial}>{person.displayName.slice(0, 1).toUpperCase()}</Text></View>)}
-            {activity.participantCount > 4 && <View style={styles.personAvatar}><Text style={styles.personInitial}>+{activity.participantCount - 4}</Text></View>}
+            {activity.participants.slice(0, 4).map(person => <UserIdentity key={person.id} userId={person.id} name={person.displayName} showName={false} />)}
+            {activity.participantCount > 4 && <Pressable accessibilityRole="button" accessibilityLabel="Ver más participantes" onPress={() => router.push(`/activity/${activity.id}/participants`)} style={styles.personAvatar}><Text style={styles.personInitial}>+{activity.participantCount - 4}</Text></Pressable>}
             {!activity.participantCount && <Text style={styles.secondary}>Sé el primero en unirte.</Text>}
           </View>
-        </Pressable>
+        </View>
 
         {activity.album.canView && <Button title="Ver álbum de recuerdos" onPress={() => router.push(`/album/${activity.id}`)} />}
         {(activity.viewer.isOrganizer || activity.viewer.isJoined) && <AttendancePanel key={activity.id} activityId={activity.id} />}

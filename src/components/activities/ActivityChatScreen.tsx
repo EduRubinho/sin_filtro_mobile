@@ -1,3 +1,4 @@
+import { UserIdentity } from '../users/UserIdentity';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -48,9 +49,9 @@ export function ActivityChatScreen({ activityId }: { activityId: string }) {
 
 function MessageBubble({ message, own }: { message: ChatMessage; own: boolean }) {
   return <View style={[styles.messageRow, own && styles.ownRow]}>
-    {!own && <View style={styles.avatar}><Text style={styles.avatarText}>{message.sender.displayName.slice(0, 1).toUpperCase()}</Text></View>}
+    {!own && <UserIdentity userId={message.sender.id} name={message.sender.displayName} size={32} showName={false} />}
     <View style={[styles.bubble, own && styles.ownBubble]}>
-      {!own && <View style={styles.senderRow}><Text style={styles.sender}>{message.sender.displayName}</Text>{message.sender.isOrganizer && <Text style={styles.organizer}>ORGANIZA</Text>}</View>}
+      {!own && <View style={styles.senderRow}><UserIdentity userId={message.sender.id} name={message.sender.displayName} showAvatar={false} nameStyle={styles.sender} />{message.sender.isOrganizer && <Text style={styles.organizer}>ORGANIZA</Text>}</View>}
       <Text style={[styles.body, own && styles.ownBody]}>{message.body}</Text>
       <Text style={[styles.time, own && styles.ownTime]}>{new Date(message.createdAt).toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' })}</Text>
     </View>
